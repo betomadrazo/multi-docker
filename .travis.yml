@@ -1,0 +1,27 @@
+language: generic
+services:
+  - docker
+
+before_install:
+  - docker build -t betomadrazo/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true betomadrazo/react-test npm test
+
+after_success:
+  - docker build -t betomadrazo/multi-client ./client
+  - docker build -t betomadrazo/multi-nginx ./nginx
+  - docker build -t betomadrazo/multi-server ./server
+  - docker build -t betomadrazo/multi-worker ./worker
+  # Login to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push betomadrazo/multi-client
+  - docker push betomadrazo/multi-nginx
+  - docker push betomadrazo/multi-server
+  - docker push betomadrazo/multi-worker
+
+
+
+
+#- docker run -e CI=true USERNAME/react-test npm test
